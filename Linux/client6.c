@@ -8,15 +8,18 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <net/if.h>
 
 #define MAXBUFLEN 100
 
 int main(int argc, char const *argv[]) {
 
 	int sk, n, num_bytes, err;
-	struct addrinfo hints, *srvinfo, *p;
 	char buf[MAXBUFLEN];
-	
+	char *ifname = "bt0";
+	struct ifreq ifr;
+	struct addrinfo hints, *srvinfo, *p;
+
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET6;
 	hints.ai_socktype = SOCK_DGRAM;
@@ -40,6 +43,11 @@ int main(int argc, char const *argv[]) {
 	if(p == NULL) {
 		perror("failed to bind a socket");
 		goto error;
+	}
+
+	if (setsockopt(sk, SOL_SOCKET, SO_BINDTODEVICE, ifname, 4) < 0) {
+	     fprintf(stderr, "error at setsockopt, ensure it is running as root.\n");
+	     exit(1);
 	}
 
 	num_bytes = sendto(sk, argv[3], strlen(argv[3]), 0,
