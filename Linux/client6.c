@@ -10,12 +10,11 @@
 #include <netdb.h>
 #include <net/if.h>
 
-#define MAXBUFLEN 100
 
 int main(int argc, char const *argv[]) {
 
 	int sk, n, num_bytes, err;
-	char buf[MAXBUFLEN];
+	uint32_t payload = atoi(argv[3]);
 	char *ifname = "bt0";
 	struct ifreq ifr;
 	struct addrinfo hints, *srvinfo, *p;
@@ -50,20 +49,20 @@ int main(int argc, char const *argv[]) {
 	     exit(1);
 	}
 
-	num_bytes = sendto(sk, argv[3], strlen(argv[3]), 0,
+	num_bytes = sendto(sk, &payload, sizeof(payload), 0,
 		p->ai_addr, p->ai_addrlen);
 	if(num_bytes < 0) {
 		perror("error on sendto");
 		goto error;
 	}
-	printf("Sent: %s\n", argv[3]);
+	printf("Sent: %d\n", payload);
 
-	num_bytes = recv(sk, buf, sizeof(buf), 0);
-	buf[num_bytes] = '\0';
-	printf("Received: %s\n", buf);
+	num_bytes = recv(sk, &payload, sizeof(payload), 0);
+	printf("Received: %d\n", payload);
 	
 error: 
 	freeaddrinfo(srvinfo);
 	close(sk);
 	return 0;
 }
+
